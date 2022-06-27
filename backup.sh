@@ -61,7 +61,7 @@ default_api_version = 2
 EOF
   fi
   echo "uploading backup archive to GCS bucket=$GCS_BUCKET"
-  gsutil cp $BACKUP_DIR/$archive_name $GCS_BUCKET
+  gsutil cp -s archive $BACKUP_DIR/$archive_name $GCS_BUCKET
 }
 
 send_mattermost_message() {
