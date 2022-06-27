@@ -1,14 +1,14 @@
 # postgres-gcs-backup
 
-This project aims to provide a simple way to perform a PostgreSQL server/db backup using `pg_dump` and to upload it to Google Cloud Storage. It was greatly inspired from [`takemetour/docker-postgres-gcs-backup`](https://github.com/takemetour/docker-postgres-gcs-backup).
-
-We provide a kubernetes support thanks to the helm chart located in the `chart` folder of this repository.
+This project aims to provide a simple way to perform a PostgreSQL server/db backup using `pg_dump` and to upload it to Google Cloud Storage.
 
 ### Docker image
 
-You can pull the public image from Docker Hub:
+```sh
+docker build -t your-registry/image-name:latest .
 
-    docker pull diogopms/postgres-gcs-backup:latest
+docker push your-registry/image-name:latest
+```
 
 ### Configuration
 
@@ -92,7 +92,7 @@ provider "helm" {
 }
 resource "helm_release" "postgres_auto_backup" {
   provider   = helm.my_postgres_auto_backup
-  repository = "https://raw.githubusercontent.com/ces-truongvu/postgres-gcs-backup/master/chart"
+  repository = "https://raw.githubusercontent.com/Code-Engine-Studio/postgres-gcs-backup/master/chart"
   name       = "release_name"
   chart      = "postgres-gcs-backup"
 
@@ -128,3 +128,21 @@ To use the resulting JSON key file within Kubernetes you can create a secret fro
       --from-file=credentials.json=/path/to/your/key.json
 
 Then you will need to specify this secret name via the `--set secretName=<your_secret_name>` argument to the `helm install` command or by specifying it directly in your `values.yaml` file (by default, the secret name is set to `postgres-gcs-backup`). The key file will be mounted by default under `/secrets/gcp/credentials.json` and the `GCS_KEY_FILE_PATH` variable should point to it.
+
+### Restore backed-up file
+
+##### Forward Postgres port to your local
+
+```sh
+kubectl port-forward svc/postgresql 5433:5432 -n development
+```
+
+Now you can access postgres via localhost at port 5433
+
+##### Using Postgres cli to restore data
+
+Download backed-up files from GCS, then using the following command
+
+```sh
+psql -U username -d dbname < filename.sql
+```
